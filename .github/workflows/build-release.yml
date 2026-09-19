@@ -1,0 +1,97 @@
+name: Build & attach release APK
+
+on:
+  push:
+    tags:
+      - 'v*'          # fires on every tag like v1.0.1, v2.3.1, etc.
+  release:
+    types: [published] # also fires when a release is published via the GitHub UI
+  workflow_dispatch:   # manual runs use the version from package.json
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Restore signing keystore (or auto-generate one if secrets are absent)
+        env:
+          KEYSTORE_BASE64:   ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS:         ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD:      ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Using repository keystore secret"
+            echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+            printf 'storeFile=release.keystore\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+              "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" \
+              > android/keystore.properties
+          else
+            echo "No KEYSTORE_BASE64 secret — generating a self-signed keystore"
+            keytool -genkeypair -v \
+              -keystore android/app/release.keystore \
+              -alias vishaltailor \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass android123 \
+              -keypass  android123 \
+              -dname "CN=VishalTailor, OU=Mobile, O=VishalTailor, L=Kathmandu, S=Bagmati, C=NP"
+            printf 'storeFile=release.keystore\nstorePassword=android123\nkeyAlias=vishaltailor\nkeyPassword=android123\n' \
+              > android/keystore.properties
+          fi
+
+      - name: Build release APK
+        run: |
+          chmod +x android/gradlew
+          cd android
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Resolve tag name
+        id: tag
+        run: |
+          TAG="${GITHUB_REF_NAME:-}"
+          if [ -z "$TAG" ] || [[ "$TAG" != v* ]]; then
+            # Manual dispatch (or non-tag ref): fall back to package.json version
+            TAG="v$(node -p "require('./package.json').version")"
+          fi
+          if [ -z "$TAG" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          fi
+          echo "name=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update GitHub release and attach APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.tag.outputs.name }}"
+          SRC="android/app/build/outputs/apk/release/app-release.apk"
+          cp "$SRC" "VishalTailor-${TAG}.apk"
+          cp "$SRC" "VishalTailor.apk"
+
+          # Delete existing release object (e.g. draft releases) without deleting git tag
+          gh release delete "$TAG" --yes --repo "$GITHUB_REPOSITORY" || true
+
+          # Create published GitHub Release and attach APKs
+          gh release create "$TAG" \
+            "VishalTailor-${TAG}.apk" \
+            "VishalTailor.apk" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "VishalTailor Mobile ${TAG}" \
+            --notes "Automated release for ${TAG}. Download the APK below and sideload it on any Android device." \
+            --latest

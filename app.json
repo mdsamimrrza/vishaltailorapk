@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "New Vishal Tailors",
+    "name": "VishalTailor",
     "slug": "vishaltailorapk",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "newvishaltailors",
@@ -18,7 +18,10 @@
       "predictiveBackGestureEnabled": false,
       "jsEngine": "hermes",
       "enableProguardInReleaseBuilds": true,
-      "hermesFlags": ["-O", "--emit-binary"]
+      "hermesFlags": [
+        "-O",
+        "--emit-binary"
+      ]
     },
     "web": {
       "output": "static"
