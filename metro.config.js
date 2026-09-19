@@ -8,25 +8,18 @@ const config = getDefaultConfig(__dirname);
 
 config.maxWorkers = 2;
 
-// Production optimizations
+// Minifier config. NOTE: a previous "aggressive" version of this block
+// (toplevel mangle, unsafe_* optimizations, and a random
+// createModuleIdFactory) produced corrupt release bundles that crashed
+// instantly with "Requiring unknown module ..." — do not re-add those.
 config.transformer = {
   ...config.transformer,
   minifierConfig: {
     keep_fnames: true,
-    mangle: true,
-    toplevel: true,
     compress: {
       drop_console: true,
       drop_debugger: true,
       pure_funcs: ["console.log", "console.info", "console.debug", "console.warn"],
-      passes: 3,
-      unsafe: true,
-      unsafe_comps: true,
-      unsafe_Function: true,
-      unsafe_math: true,
-      unsafe_proto: true,
-      unsafe_regexp: true,
-      unsafe_undefined: true,
     },
     output: {
       ascii_only: true,
@@ -34,12 +27,6 @@ config.transformer = {
   },
   inlineRequires: true,
   unstable_allowRequireContext: true,
-  enableBabelRCTLookup: false,
-};
-
-config.serializer = {
-  ...config.serializer,
-  createModuleIdFactory: () => () => Math.random().toString(36).slice(2),
 };
 
 module.exports = config;
