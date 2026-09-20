@@ -22,7 +22,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { ArrowLeft, Heart, Share2 } from "lucide-react-native";
-import { catalogueItems, catalogueImage } from "../data/catalogue";
+import { getCatalogueItems, catalogueImage } from "../data/catalogue";
 import { services } from "../data/services";
 import { galleryImages } from "../data/gallery";
 import { colors, fonts } from "../theme";
@@ -48,7 +48,7 @@ export default function ImageViewerScreen() {
     const resolve = (rid: string) => {
       const gallery = galleryImages.find((g) => g.id === rid);
       if (gallery) return { id: gallery.id, source: gallery.source };
-      const catalogue = catalogueItems.find((i) => i.id === rid);
+      const catalogue = getCatalogueItems().find((i) => i.id === rid);
       if (catalogue) return { id: catalogue.id, source: catalogueImage(catalogue) };
       const service = services.find((s) => s.id === rid);
       if (service?.image) return { id: service.id, source: service.image };
@@ -285,7 +285,7 @@ function ZoomableImage({
 function deriveRelatedIds(id?: string): string[] {
   if (!id) return [];
   if (galleryImages.some((g) => g.id === id)) return galleryImages.map((g) => g.id);
-  if (catalogueItems.some((i) => i.id === id)) return catalogueItems.map((i) => i.id);
+  if (getCatalogueItems().some((i) => i.id === id)) return getCatalogueItems().map((i) => i.id);
   if (services.some((s) => s.id === id && s.image)) {
     return services.filter((s) => s.image).map((s) => s.id);
   }

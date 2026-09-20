@@ -17,7 +17,7 @@ import { Pager } from "../components/Pager";
 import { Img } from "../components/Img";
 import { FlashList } from "@shopify/flash-list";
 import {
-  catalogueItems,
+  getCatalogueItems,
   catalogueThumb,
   catalogueImage,
   localizedName,
@@ -70,7 +70,7 @@ export default function CatalogueFullScreen() {
   const imgH = Math.round(cardW * 1.22);
 
   const items = useMemo(() => {
-    const searched = searchCatalogue(catalogueItems, query);
+    const searched = searchCatalogue(getCatalogueItems(), query);
     const filtered = filter === "all" ? searched : searched.filter((i) => i.category === filter);
     // "All" shows the C-series completely, then CP, then the other categories.
     return filter === "all" ? orderAll(filtered) : filtered;
@@ -96,7 +96,7 @@ export default function CatalogueFullScreen() {
   };
   const filters: { key: Filter; label: string }[] = [
     { key: "all", label: t("catalogue_all") },
-    ...[...new Set(catalogueItems.map((i) => i.category))]
+    ...[...new Set(getCatalogueItems().map((i) => i.category))]
       .filter((cat) => cat !== "coatpant")
       .map((cat) => ({ key: cat as Filter, label: CAT_LABELS[cat] ?? cat })),
   ];

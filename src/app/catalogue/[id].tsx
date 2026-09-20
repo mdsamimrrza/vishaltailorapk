@@ -10,7 +10,7 @@ import { colors, fonts, radius, spacing } from "../../theme";
 import { AppButton } from "../../components/ui";
 import { ScreenHeader } from "../../components/ScreenHeader";
 import {
-  catalogueItems,
+  getCatalogueItems,
   catalogueImage,
   localizedName,
   localizedDesc,
@@ -27,7 +27,7 @@ export default function CatalogueDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, language } = useLanguage();
   const router = useRouter();
-  const item = catalogueItems.find((i) => i.id === id);
+  const item = getCatalogueItems().find((i) => i.id === id);
 
   if (!item) {
     return (
@@ -46,7 +46,7 @@ export default function CatalogueDetailScreen() {
   const openViewer = () =>
     router.push({
       pathname: "/image-viewer",
-      params: { id: item.id, title: name, ids: catalogueItems.map((i) => i.id).join(",") },
+      params: { id: item.id, title: name, ids: getCatalogueItems().map((i) => i.id).join(",") },
     });
 
   const share = () =>

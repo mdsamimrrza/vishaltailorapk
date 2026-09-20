@@ -1,5 +1,4 @@
 import { ImageSourcePropType } from "react-native";
-import rawItems from "./catalogue.json";
 
 export interface CatalogueItem {
   id: string;
@@ -24,6 +23,16 @@ export interface CatalogueItem {
   colorHi: string;
   image: string;
 }
+
+// Lazy-load catalogue data to avoid blocking JS thread on startup (Moto G45 ANR fix)
+let _catalogueItems: CatalogueItem[] | null = null;
+export const getCatalogueItems = (): CatalogueItem[] => {
+  if (!_catalogueItems) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    _catalogueItems = require("./catalogue.json") as CatalogueItem[];
+  }
+  return _catalogueItems;
+};
 
 // Full-size images are now loaded remotely (CDN) — keep only local thumbnails for lists.
 // The `image` field in catalogue.json still contains the original path for CDN URL construction.
@@ -90,8 +99,6 @@ const thumbMap: Record<string, ImageSourcePropType> = {
 
 export const catalogueThumb = (item: CatalogueItem): ImageSourcePropType =>
   thumbMap[item.image] ?? catalogueImage(item);
-
-export const catalogueItems: CatalogueItem[] = rawItems as CatalogueItem[];
 
 // Full-size images loaded from CDN — construct URL from item.image path.
 // Example: item.image = "/images/catalogue/cp-01.jpg" -> "https://cdn.example.com/images/catalogue/cp-01.webp"

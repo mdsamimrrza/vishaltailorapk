@@ -16,7 +16,7 @@ import { FlashList } from "@shopify/flash-list";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDrawer } from "../../components/AppDrawer";
 import { Img } from "../../components/Img";
-import { catalogueItems, catalogueThumb, localizedName } from "../../data/catalogue";
+import { getCatalogueItems, catalogueThumb, localizedName, CatalogueItem } from "../../data/catalogue";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { colors, fonts, spacing } from "../../theme";
 
@@ -41,6 +41,13 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { open: openDrawer } = useDrawer();
   const [refreshing, setRefreshing] = useState(false);
+  const [catalogueData, setCatalogueData] = useState<CatalogueItem[]>([]);
+
+  // Load catalogue data asynchronously to avoid blocking UI on low-end devices
+  useEffect(() => {
+    const items = getCatalogueItems();
+    setCatalogueData(items);
+  }, []);
 
   const fadeIn = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -53,14 +60,14 @@ export default function HomeScreen() {
   };
 
   const heroH = Math.round(winW * 0.72);
-  const newDesigns = NEW_IDS.map((id) => catalogueItems.find((i) => i.id === id)).filter(
+  const newDesigns = NEW_IDS.map((id) => catalogueData.find((i) => i.id === id)).filter(
     (i): i is NonNullable<typeof i> => Boolean(i)
   );
-  const shirtDesigns = catalogueItems.filter((i) => i.category === "shirt");
-  const coatDesigns = catalogueItems.filter((i) => i.category === "suits");
+  const shirtDesigns = catalogueData.filter((i) => i.category === "shirt");
+  const coatDesigns = catalogueData.filter((i) => i.category === "suits");
 
   // Horizontal design carousel — same card style as New Arrivals.
-  const designRow = (title: string, designs: typeof catalogueItems, filter: string) => (
+  const designRow = (title: string, designs: CatalogueItem[], filter: string) => (
     <View style={styles.section}>
       <View style={styles.sectionHead}>
         <Text style={styles.sectionTitle}>{title}</Text>
@@ -122,7 +129,7 @@ export default function HomeScreen() {
 
   // New Arrivals — gentle auto-scroll, snaps per card.
   const CARD_PITCH = 160;
-  const newListRef = useRef<FlashList<typeof catalogueItems[0]>>(null);
+  const newListRef = useRef<FlashList<CatalogueItem>>(null);
   const newArrIdx = useRef(0);
   useEffect(() => {
     const t = setInterval(() => {
