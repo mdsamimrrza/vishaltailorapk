@@ -7,6 +7,7 @@ import {
   Animated,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,

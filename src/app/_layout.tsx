@@ -90,7 +90,6 @@ export default function RootLayout() {
           <Stack.Screen name="catalogue-full" options={{ lazy: true }} />
           <Stack.Screen name="enquiry" options={{ lazy: true }} />
           <Stack.Screen name="catalogue/[id]" options={{ lazy: true }} />
-          <Stack.Screen name="service/[id]" options={{ lazy: true }} />
           <Stack.Screen name="why-choose-us" options={{ lazy: true }} />
           <Stack.Screen name="testimonials" options={{ lazy: true }} />
           <Stack.Screen name="process" options={{ lazy: true }} />
