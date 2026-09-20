@@ -2,11 +2,12 @@ name: Build & attach release APK
 
 on:
   push:
+    branches: [main]
     tags:
-      - 'v*'          # fires on every tag like v1.0.1, v2.3.1, etc.
+      - 'v*'
   release:
-    types: [published] # also fires when a release is published via the GitHub UI
-  workflow_dispatch:   # manual runs use the version from package.json
+    types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: write
