@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect } from "react";
-import { BackHandler, Platform, View } from "react-native";
+import { BackHandler, View } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import {
   useFonts as usePlayfair,
-  PlayfairDisplay_400Regular_Italic,
   PlayfairDisplay_500Medium,
   PlayfairDisplay_600SemiBold,
   PlayfairDisplay_700Bold,
@@ -24,7 +23,6 @@ import { colors } from "../theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-// Devanagari (Nepali/Hindi) - local font
 function useDevanagariFont() {
   const [loaded] = useExpoFonts({
     "tiro-400": require("../../assets/fonts/tiro-400.ttf"),
@@ -49,12 +47,14 @@ export default function RootLayout() {
     return () => sub.remove();
   }, [router]);
 
+  // Load fonts in the background. DO NOT block rendering — on low-end
+  // devices (Moto G45 5G) synchronous font loading exceeds Android's
+  // 5-second ANR threshold and kills the app.
   const [playfairLoaded] = usePlayfair({
     PlayfairDisplay_500Medium,
     PlayfairDisplay_600SemiBold,
     PlayfairDisplay_700Bold,
     PlayfairDisplay_700Bold_Italic,
-    PlayfairDisplay_400Regular_Italic,
   });
   const [interLoaded] = useInter({
     Inter_400Regular,
@@ -64,16 +64,17 @@ export default function RootLayout() {
   });
   const devanagariLoaded = useDevanagariFont();
 
-  const fontsLoaded = playfairLoaded && interLoaded && devanagariLoaded;
+  const hideSplash = useCallback(() => {
+    SplashScreen.hideAsync().catch(() => {});
+  }, []);
 
-  const onLayoutRootView = useCallback(() => {
-    if (fontsLoaded) SplashScreen.hideAsync().catch(() => {});
-  }, [fontsLoaded]);
-
-  if (!fontsLoaded) return null;
+  // Hide splash immediately — never wait for fonts
+  useEffect(() => {
+    hideSplash();
+  }, [hideSplash]);
 
   return (
-    <View onLayout={onLayoutRootView} style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <LanguageProvider>
         <StatusBar style="dark" />
         <Stack

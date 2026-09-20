@@ -15,13 +15,7 @@
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
-      "jsEngine": "hermes",
-      "enableProguardInReleaseBuilds": true,
-      "hermesFlags": [
-        "-O",
-        "--emit-binary"
-      ]
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "static"
@@ -41,11 +35,6 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    },
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#800F1A"
     }
   }
 }

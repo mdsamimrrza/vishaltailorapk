@@ -20,7 +20,7 @@ interface LanguageContextValue {
 }
 
 const LanguageContext = createContext<LanguageContextValue>({
-  language: "ne",
+  language: "en",
   setLanguage: () => {},
   t: (k) => k,
 });
