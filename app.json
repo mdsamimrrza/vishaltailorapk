@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "VishalTailor",
+    "slug": "vishaltailorapk",
+    "version": "1.0.3",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "newvishaltailors",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#800F1A",
+    "android": {
+      "package": "com.newvishaltailors.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#3B0C0C",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#3B0C0C",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 180
+        }
+      ],
+      "expo-image"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
