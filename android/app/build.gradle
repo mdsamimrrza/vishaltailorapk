@@ -92,20 +92,32 @@ android {
         applicationId 'com.newvishaltailors.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
+        versionCode 1
         versionName "1.0.3"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
-    splits {
-        abi {
-            // Disabled: produce ONE universal APK that installs on any device.
-            enable false
-            reset()
-            include "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
-            universalApk true
+    // Auto-generate debug.keystore if missing (prevents "package conflicts with existing package")
+    tasks.register('generateDebugKeystore') {
+        doLast {
+            def keystoreFile = file('debug.keystore')
+            if (!keystoreFile.exists()) {
+                println "Generating debug.keystore..."
+                def cmd = [
+                    'keytool', '-genkeypair', '-v',
+                    '-keystore', keystoreFile.absolutePath,
+                    '-alias', 'androiddebugkey',
+                    '-keyalg', 'RSA', '-keysize', '2048', '-validity', '10000',
+                    '-storepass', 'android', '-keypass', 'android',
+                    '-dname', 'CN=Android Debug, OU=VishalTailor, O=VishalTailor, L=Kathmandu, S=Bagmati, C=NP'
+                ]
+                def proc = cmd.execute()
+                proc.waitFor()
+                println proc.text
+            }
         }
     }
+    tasks.named('preBuild').configure { dependsOn 'generateDebugKeystore' }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -113,28 +125,15 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        // CI release signing: android/keystore.properties is written by the
-        // GitHub Actions workflow. Local builds fall back to the debug keystore.
-        release {
-            def keystorePropertiesFile = rootProject.file("keystore.properties")
-            if (keystorePropertiesFile.exists()) {
-                def keystoreProperties = new Properties()
-                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-                storeFile file(keystoreProperties['storeFile'])
-                storePassword keystoreProperties['storePassword']
-                keyAlias keystoreProperties['keyAlias']
-                keyPassword keystoreProperties['keyPassword']
-            }
-        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Use the CI-generated release keystore when keystore.properties
-            // exists; otherwise fall back to the debug keystore for local builds.
-            signingConfig rootProject.file("keystore.properties").exists() ? signingConfigs.release : signingConfigs.debug
+            // Caution! In production, you need to generate your own keystore file.
+            // see https://reactnative.dev/docs/signed-apk-android.
+            signingConfig signingConfigs.debug
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
             shrinkResources enableShrinkResources.toBoolean()
             minifyEnabled enableMinifyInReleaseBuilds
