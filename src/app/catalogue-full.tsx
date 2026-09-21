@@ -20,7 +20,6 @@ import { FlashList } from "@shopify/flash-list";
 import {
   getCatalogueItems,
   catalogueThumb,
-  catalogueImage,
   localizedName,
   searchCatalogue,
   CatalogueItem,

@@ -41,6 +41,16 @@ export default function Index() {
     });
   }, []);
 
+  const revealed = useRef(false);
+  // Reveal the native splash only when the JS splash has actually drawn —
+  // previously it stayed up through the whole 2.8s animation, so the custom
+  // splash was never visible ("splash skipped").
+  const onFirstLayout = () => {
+    if (revealed.current) return;
+    revealed.current = true;
+    SplashScreen.hideAsync().catch(() => {});
+  };
+
   const { width: winW } = Dimensions.get("window");
   const barW = progress.interpolate({
     inputRange: [0, 1],
@@ -48,7 +58,7 @@ export default function Index() {
   });
 
   return (
-    <Animated.View style={[styles.container, { opacity: screenOpacity }]}>
+    <Animated.View style={[styles.container, { opacity: screenOpacity }]} onLayout={onFirstLayout}>
       <StatusBar style="light" />
 
       {/* 01 spec: primary maroon field, suit texture blended in subtly */}
